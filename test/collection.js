@@ -372,103 +372,6 @@ $(document).ready(function() {
     equal(counter, 2);
   });
 
-  test("model destroy removes from all collections", 3, function() {
-    var e = new Backbone.Model({id: 5, title: 'Othello'});
-    e.sync = function(method, model, options) { options.success(); };
-    var colE = new Backbone.Collection([e]);
-    var colF = new Backbone.Collection([e]);
-    e.destroy();
-    ok(colE.length === 0);
-    ok(colF.length === 0);
-    equal(undefined, e.collection);
-  });
-
-  test("Colllection: non-persisted model destroy removes from all collections", 3, function() {
-    var e = new Backbone.Model({title: 'Othello'});
-    e.sync = function(method, model, options) { throw "should not be called"; };
-    var colE = new Backbone.Collection([e]);
-    var colF = new Backbone.Collection([e]);
-    e.destroy();
-    ok(colE.length === 0);
-    ok(colF.length === 0);
-    equal(undefined, e.collection);
-  });
-
-  test("fetch", 4, function() {
-    var collection = new Backbone.Collection;
-    collection.url = '/test';
-    collection.fetch();
-    equal(this.syncArgs.method, 'read');
-    equal(this.syncArgs.model, collection);
-    equal(this.syncArgs.options.parse, true);
-
-    collection.fetch({parse: false});
-    equal(this.syncArgs.options.parse, false);
-  });
-
-  test("fetch with an error response triggers an error event", 1, function () {
-    var collection = new Backbone.Collection();
-    collection.on('error', function () {
-      ok(true);
-    });
-    collection.sync = function (method, model, options) { options.error(); };
-    collection.fetch();
-  });
-
-  test("ensure fetch only parses once", 1, function() {
-    var collection = new Backbone.Collection;
-    var counter = 0;
-    collection.parse = function(models) {
-      counter++;
-      return models;
-    };
-    collection.url = '/test';
-    collection.fetch();
-    this.syncArgs.options.success();
-    equal(counter, 1);
-  });
-
-  test("create", 4, function() {
-    var collection = new Backbone.Collection;
-    collection.url = '/test';
-    var model = collection.create({label: 'f'}, {wait: true});
-    equal(this.syncArgs.method, 'create');
-    equal(this.syncArgs.model, model);
-    equal(model.get('label'), 'f');
-    equal(model.collection, collection);
-  });
-
-  test("create with validate:true enforces validation", 2, function() {
-    var ValidatingModel = Backbone.Model.extend({
-      validate: function(attrs) {
-        return "fail";
-      }
-    });
-    var ValidatingCollection = Backbone.Collection.extend({
-      model: ValidatingModel
-    });
-    var col = new ValidatingCollection();
-    col.on('invalid', function (collection, attrs, options) {
-      equal(options.validationError, 'fail');
-    });
-    equal(col.create({"foo":"bar"}, {validate:true}), false);
-  });
-
-  test("a failing create returns model with errors", function() {
-    var ValidatingModel = Backbone.Model.extend({
-      validate: function(attrs) {
-        return "fail";
-      }
-    });
-    var ValidatingCollection = Backbone.Collection.extend({
-      model: ValidatingModel
-    });
-    var col = new ValidatingCollection();
-    var m = col.create({"foo":"bar"});
-    equal(m.validationError, 'fail');
-    equal(col.length, 1);
-  });
-
   test("initialize", 1, function() {
     var Collection = Backbone.Collection.extend({
       initialize: function() {
@@ -598,20 +501,6 @@ $(document).ready(function() {
     ok(attrs === models[0]);
   });
 
-  test("#714: access `model.collection` in a brand new model.", 2, function() {
-    var collection = new Backbone.Collection;
-    collection.url = '/test';
-    var Model = Backbone.Model.extend({
-      set: function(attrs) {
-        equal(attrs.prop, 'value');
-        equal(this.collection, collection);
-        return this;
-      }
-    });
-    collection.model = Model;
-    collection.create({prop: 'value'});
-  });
-
   test("#574, remove its own reference to the .models array.", 2, function() {
     var col = new Backbone.Collection([
       {id: 1}, {id: 2}, {id: 3}, {id: 4}, {id: 5}, {id: 6}
@@ -701,53 +590,6 @@ $(document).ready(function() {
     ok(colUndefined.comparator);
   });
 
-  test("#1355 - `options` is passed to success callbacks", 2, function(){
-    var m = new Backbone.Model({x:1});
-    var col = new Backbone.Collection();
-    var opts = {
-      success: function(collection, resp, options){
-        ok(options);
-      }
-    };
-    col.sync = m.sync = function( method, collection, options ){
-      options.success(collection, [], options);
-    };
-    col.fetch(opts);
-    col.create(m, opts);
-  });
-
-  test("#1412 - Trigger 'request' and 'sync' events.", 4, function() {
-    var collection = new Backbone.Collection;
-    collection.url = '/test';
-    Backbone.ajax = function(settings){ settings.success(); };
-
-    collection.on('request', function(obj, xhr, options) {
-      ok(obj === collection, "collection has correct 'request' event after fetching");
-    });
-    collection.on('sync', function(obj, response, options) {
-      ok(obj === collection, "collection has correct 'sync' event after fetching");
-    });
-    collection.fetch();
-    collection.off();
-
-    collection.on('request', function(obj, xhr, options) {
-      ok(obj === collection.get(1), "collection has correct 'request' event after one of its models save");
-    });
-    collection.on('sync', function(obj, response, options) {
-      ok(obj === collection.get(1), "collection has correct 'sync' event after one of its models save");
-    });
-    collection.create({id: 1});
-    collection.off();
-  });
-
-  test("#1447 - create with wait adds model.", 1, function() {
-    var collection = new Backbone.Collection;
-    var model = new Backbone.Model;
-    model.sync = function(method, model, options){ options.success(); };
-    collection.on('add', function(){ ok(true); });
-    collection.create(model, {wait: true});
-  });
-
   test("#1448 - add sorts collection after merge.", 1, function() {
     var collection = new Backbone.Collection([
       {id: 1, x: 1},
@@ -774,14 +616,6 @@ $(document).ready(function() {
     deepEqual(values, [1, 2, 3]);
   });
 
-  test("#1604 - Removal during iteration.", 0, function() {
-    var collection = new Backbone.Collection([{}, {}]);
-    collection.on('add', function() {
-      collection.at(0).destroy();
-    });
-    collection.add({}, {at: 0});
-  });
-
   test("#1638 - `sort` during `add` triggers correctly.", function() {
     var collection = new Backbone.Collection;
     collection.comparator = function(model) { return model.get('x'); };
@@ -793,20 +627,6 @@ $(document).ready(function() {
     });
     collection.add([{id: 1, x: 1}, {id: 2, x: 2}]);
     deepEqual(added, [1, 2]);
-  });
-
-  test("fetch parses models by default", 1, function() {
-    var model = {};
-    var Collection = Backbone.Collection.extend({
-      url: 'test',
-      model: Backbone.Model.extend({
-        parse: function(resp) {
-          strictEqual(resp, model);
-        }
-      })
-    });
-    new Collection().fetch();
-    this.ajaxSettings.success([model]);
   });
 
   test("`sort` shouldn't always fire on `add`", 1, function() {
@@ -1051,25 +871,6 @@ $(document).ready(function() {
     }));
     var res = {status: 'ok', data:[{id: 1}]};
     collection.set(res, {parse: true});
-  });
-
-  asyncTest("#1939 - `parse` is passed `options`", 1, function () {
-    var collection = new (Backbone.Collection.extend({
-      url: '/',
-      parse: function (data, options) {
-        strictEqual(options.xhr.someHeader, 'headerValue');
-        return data;
-      }
-    }));
-    var ajax = Backbone.ajax;
-    Backbone.ajax = function (params) {
-      _.defer(params.success);
-      return {someHeader: 'headerValue'};
-    };
-    collection.fetch({
-      success: function () { start(); }
-    });
-    Backbone.ajax = ajax;
   });
 
   test("`add` only `sort`s when necessary", 2, function () {
