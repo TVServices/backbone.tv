@@ -163,9 +163,9 @@ $(document).ready(function() {
 
   });
 
-  test("initialize", 1, function() {
-    equal(router.testing, 101);
-  });
+  // test("initialize", 1, function() {
+  //   equal(router.testing, 101);
+  // });
 
   test("routes (simple)", 4, function() {
     location.replace('http://example.com#search/news');
