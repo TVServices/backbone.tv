@@ -14,13 +14,15 @@ $(document).ready(function() {
 
   });
 
-  test("constructor", 6, function() {
+  test("constructor", 8, function() {
     equal(view.el.id, 'test-view');
     equal(view.el.className, 'test-view');
     equal(view.el.other, void 0);
     equal(view.options.id, 'test-view');
     equal(view.options.className, 'test-view');
     equal(view.options.other, 'non-special-option');
+    equal(view.children.length, 0);
+    equal(view.inputFocus, null);
   });
 
   test("jQuery", 1, function() {
@@ -328,6 +330,84 @@ $(document).ready(function() {
 
     var view = new View;
     ok(view.$el.is('p:has(a)'));
+  });
+
+  test("addChild", 4, function() {
+    var child1 = new Backbone.View;
+    var child2 = new Backbone.View;
+    view.addChild(child1);
+    equal(view.children.length, 1);
+
+    view.addChild(child2);
+    equal(view.children.length, 2);
+    equal(view.children[0], child1);
+    equal(view.children[1], child2);
+  });
+
+  test("addChildAt", 3, function() {
+    var child1 = new Backbone.View;
+    var child2 = new Backbone.View;
+    view.addChild(child1);
+
+    view.addChildAt(child2, 0);
+    equal(view.children.length, 2);
+    equal(view.children[1], child1);
+    equal(view.children[0], child2);
+  });
+
+  test("getChildren", 4, function() {
+    var child1 = new Backbone.View;
+    var child2 = new Backbone.View;
+    view.addChild(child1);
+    view.addChild(child2);
+
+    var children = view.getChildren();
+    equal(view.children[0], children[0]);
+    equal(view.children[1], children[1]);
+    equal(view.children[0], child1);
+    equal(view.children[1], child2);
+  });
+
+  test("getChildIndex", 3, function() {
+    var view2 = new Backbone.View;
+    var child1 = new Backbone.View;
+    var child2 = new Backbone.View;
+    view.addChild(child1);
+    view.addChild(child2);
+
+    equal(view.getChildIndex(child1), 0);
+    equal(view.getChildIndex(child2), 1);
+    equal(view.getChildIndex(view2), -1);
+  });
+
+  test("setFocus", 7, function() {
+    var child1 = new Backbone.View;
+    var child2 = new Backbone.View;
+    view.addChild(child1);
+    view.addChild(child2);
+
+    equal(view.inputFocus, null);
+    ok(view.setFocus(child1));
+    equal(view.inputFocus, child1);
+    ok(view.setFocus(null));
+    equal(view.inputFocus, null);
+
+    var view2 = new Backbone.View;
+    ok(!view.setFocus(view2));
+    equal(view.inputFocus, null);
+  });
+
+  test("getFocus", 3, function() {
+    var child1 = new Backbone.View;
+    var child2 = new Backbone.View;
+    view.addChild(child1);
+    view.addChild(child2);
+
+    equal(view.getFocus(), null);
+    view.setFocus(child1);
+    equal(view.getFocus(), child1);
+    view.setFocus(null);
+    equal(view.getFocus(), null);
   });
 
   test("events passed in options", 2, function() {

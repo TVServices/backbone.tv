@@ -820,6 +820,8 @@
     this._ensureElement();
     this.initialize.apply(this, arguments);
     this.delegateEvents();
+    this.children = [];
+    this.inputFocus = null;
   };
 
   // Cached regex to split keys for `delegate`.
@@ -833,6 +835,64 @@
 
     // The default `tagName` of a View's element is `"div"`.
     tagName: 'div',
+
+    // Add a child to this View
+    addChild: function(child) {
+      this.children.push(child);
+    },
+      
+    // Add a child to this View at index
+    addChildAt: function(child, idx) {
+      this.children.splice(idx, 0, child);
+    },
+
+    // Get child at
+    getChildAt: function(idx) {
+      return this.children[idx];
+    },
+
+    // Get child index
+    getChildIndex: function(child) {
+      return this.children.indexOf(child);
+    },
+
+    // Get children
+    getChildren: function() {
+      return this.children.slice(0);
+    },
+
+    // Get the next child in the focus chain
+    getFocus: function() {
+      return this.inputFocus;
+    },
+
+    // Set which child has focus
+    setFocus: function(child) {
+      if (child == null) {
+        this.inputFocus = null;
+        return true;
+      }
+      var idx = this.getChildIndex(child);
+      if (idx != -1) {
+        this.inputFocus = child;
+        return true;
+      }
+      return false;
+    },
+
+    // Call back for the InputHandler, returning 'true' notifies the Input
+    // Handler that the event is being 'captured' by this View and that it
+    // should stop searching for the focus element.
+    captureKeyDown: function(event) {
+      return false;
+    },
+
+    // Call back for the InputHandler, returning 'true' notifies the Input
+    // Handler that the event has been handled and not to pass it up the 
+    // View Tree
+    onKeyDown: function(event) {
+      return false;
+    },
 
     // jQuery delegate for element lookup, scoped to DOM elements within the
     // current view. This should be prefered to global lookups where possible.
@@ -940,6 +1000,15 @@
     }
 
   });
+
+
+  // Backbone.InputHandler
+  // -------------
+
+  // Backbone InputHandlers are used to pass non pointer events up the View 
+  // Tree to the current focused element
+  var InputHandler = Backbone.InputHandler = function() {
+  };
 
   // Helpers
   // -------
