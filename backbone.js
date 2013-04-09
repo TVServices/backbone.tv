@@ -1007,8 +1007,77 @@
 
   // Backbone InputHandlers are used to pass non pointer events up the View 
   // Tree to the current focused element
-  var InputHandler = Backbone.InputHandler = function() {
+  var InputHandler = Backbone.InputHandler = function(rootEle, rootView) {
+    this.rootEle = rootEle;
+    this.rootView = rootView;
+    this.initialize();
   };
+
+  _.extend(InputHandler.prototype, {
+
+    // A mapping of dom events to view callback functions
+    eventTypes: [
+      {
+        'name': 'keydown',
+        'capture': 'captureKeyDown',
+        'event': 'onKeyDown'
+      },
+      {
+        'name': 'keyup',
+        'capture': 'captureKeyUp',
+        'event': 'onKeyUp'
+      }
+    ],
+
+    // Sets up a callback
+    initializeEvent: function(eventType) {
+      var self = this;
+      var makeCallback = function(eventType) {
+        return function(event) {
+          self.walkViews(eventType.capture, eventType.event, event);
+        }
+      }
+      this.rootEle.addEventListener(eventType.name, makeCallback(eventType));
+    },
+
+    // Sets up initial events from eventMap
+    initialize: function() {
+      for (var idx = 0; idx < this.eventTypes.length; ++idx) {
+        this.initializeEvent(this.eventTypes[idx]);
+      }
+    },
+
+    // Walk a focus path through a view-tree calling the 
+    // appropriate callbacks
+    walkViews: function(capture, onEvent, event) {
+      var viewStack = [];
+      var cur = this.rootView;
+
+      do {
+        viewStack.push(cur);
+        var captured = false;
+        if (capture in cur) {
+          captured = cur[capture](event);
+        }
+        if (captured) {
+          break;
+        }
+        cur = cur.getFocus();
+      } while (cur);
+
+      while (viewStack.length) {
+        cur = viewStack.pop();
+        var handled = false;
+        if (onEvent in cur) {
+          handled = cur[onEvent](event);
+        }
+        if (handled) {
+          break;
+        }
+      }
+    }
+    
+  });
 
   // Helpers
   // -------
@@ -1050,7 +1119,7 @@
   };
 
   // Set up inheritance for the model, collection, router, view and history.
-  Model.extend = Collection.extend = View.extend = extend;
+  Model.extend = Collection.extend = View.extend = InputHandler.extend = extend;
 
   // Throw an error when a URL is needed, and none is supplied.
   var urlError = function() {
