@@ -480,6 +480,14 @@ $(document).ready(function() {
     equal(container.children()[0], c.el);   
   });
 
+  test("syncChildren blows away garbage", 2, function() {
+    var div = document.createElement('div');
+    view.getChildContainer().append(div);
+    equal(view.getChildContainer().children().length, 1);
+    view.syncChildren();
+    equal(view.el.children.length, 0);
+  });
+
   test("syncChildren re-adds all children in order", 5, function() {
     var c1 = new Backbone.View();
     var c2 = new Backbone.View();
@@ -489,8 +497,8 @@ $(document).ready(function() {
     view.addChild(c2);
     view.addChildAt(c3, 1);
     var div = document.createElement('div');
-    view.el.appendChild(div);
-    equal(view.el.children.length, 4);
+    view.getChildContainer().append(div);
+    equal(view.getChildContainer().children().length, 4);
     view.syncChildren();
     equal(view.el.children.length, 3);
     equal(view.el.children[0], c1.el);   
