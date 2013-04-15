@@ -63,7 +63,7 @@ $(document).ready(function() {
         return false;
       }
     });
-    var a = new View, b = new View, c = new View, d = View;
+    var a = new View, b = new View, c = new View, d = new View;
     view.addChild(a);
     view.setFocus(a);
     a.name = 'a';

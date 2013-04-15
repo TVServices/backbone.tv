@@ -828,7 +828,7 @@
   var delegateEventSplitter = /^(\S+)\s*(.*)$/;
 
   // List of view options to be merged as properties.
-  var viewOptions = ['model', 'collection', 'el', 'id', 'attributes', 'className', 'tagName', 'events'];
+  var viewOptions = ['model', 'collection', 'el', 'id', 'attributes', 'className', 'tagName', 'events', 'containerSelector'];
 
   // Set up all inheritable **Backbone.View** properties and methods.
   _.extend(View.prototype, Events, {
@@ -836,14 +836,43 @@
     // The default `tagName` of a View's element is `"div"`.
     tagName: 'div',
 
+    // The default 'childContainer' is null which tells the
+    // view to add the children directly to 'el'. The container
+    // must start without any children
+    containerSelector: null,
+
+    // Gets the 'childContainer'
+    getChildContainer: function() {
+      return this.containerSelector
+                    ? this.$(this.containerSelector).first()
+                    : this.$el;
+    },
+
+    // Will empty the 'childContainer' and then add all children
+    // back in. Should be used when you need to re-render, or any
+    // other time the 'childContainer' may be holding invalid
+    // elements
+    syncChildren: function() {
+      var container = this.getChildContainer();
+      container.empty();
+      for (var idx = 0; idx < this.children.length; ++idx) {
+        container.append(this.children[idx].el);
+      }
+    },
+
     // Add a child to this View
     addChild: function(child) {
       this.children.push(child);
+      this.getChildContainer().append(child.el);
     },
       
     // Add a child to this View at index
     addChildAt: function(child, idx) {
       this.children.splice(idx, 0, child);
+      var container = this.getChildContainer();
+      var children = container.children();
+      if (children.length <= idx) container.append(child.el);
+      else                        child.$el.insertBefore(children.eq(idx));
     },
 
     // Get child at

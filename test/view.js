@@ -1,6 +1,11 @@
 $(document).ready(function() {
 
   var view;
+  var DerivedView = Backbone.View.extend({
+    initialize: function() {
+      this.$el.html("<div class='one'></div><div class='two'></div>");
+    },
+  });
 
   module("Backbone.View", {
 
@@ -344,15 +349,18 @@ $(document).ready(function() {
     equal(view.children[1], child2);
   });
 
-  test("addChildAt", 3, function() {
-    var child1 = new Backbone.View;
-    var child2 = new Backbone.View;
-    view.addChild(child1);
+  test("addChildAt", 4, function() {
+    var c1 = new Backbone.View();
+    var c2 = new Backbone.View();
+    var c3 = new Backbone.View();
 
-    view.addChildAt(child2, 0);
-    equal(view.children.length, 2);
-    equal(view.children[1], child1);
-    equal(view.children[0], child2);
+    view.addChildAt(c1, 0);
+    view.addChildAt(c2, 1);
+    view.addChildAt(c3, 1);
+    equal(view.children.length, 3);
+    equal(view.children[0], c1);
+    equal(view.children[1], c3);
+    equal(view.children[2], c2);
   });
 
   test("getChildren", 4, function() {
@@ -432,6 +440,62 @@ $(document).ready(function() {
     view.$('#test').trigger('click');
     view2.$('#test').trigger('click');
     equal(counter, 4);
+  });
+
+  test("children are added to dom in the correct order", 4, function() {
+    var c1 = new Backbone.View();
+    var c2 = new Backbone.View();
+    var c3 = new Backbone.View();
+
+    view.addChildAt(c1, 0);
+    view.addChildAt(c2, 1);
+    view.addChildAt(c3, 1);
+    equal(view.el.children.length, 3);
+    equal(view.el.children[0], c1.el);   
+    equal(view.el.children[1], c3.el);   
+    equal(view.el.children[2], c2.el);   
+  });
+
+  test("addChild adds ele's to the correct element", 2, function() {
+    var view = new DerivedView({containerSelector: '.two'});
+    var c = new Backbone.View();
+    view.addChild(c);
+    var container = view.getChildContainer();
+    equal(container.children().length, 1);
+    equal(container.children()[0], c.el);   
+  });
+
+  test("getChildContainer returns the correct container", 2, function() {
+    equal(view.getChildContainer()[0], view.$el[0]);
+    var derived = new DerivedView({containerSelector: '.two'});
+    equal(derived.getChildContainer()[0], derived.$('.two')[0]);
+  }),
+
+  test("addChiltAt adds ele's to the correct element", 2, function() {
+    var view = new DerivedView({containerSelector: '.two'});
+    var c = new Backbone.View();
+    view.addChildAt(c, 0);
+    var container = view.getChildContainer();
+    equal(container.children().length, 1);
+    equal(container.children()[0], c.el);   
+  });
+
+  test("syncChildren re-adds all children in order", 5, function() {
+    var c1 = new Backbone.View();
+    var c2 = new Backbone.View();
+    var c3 = new Backbone.View();
+
+    view.addChild(c1);
+    view.addChild(c2);
+    view.addChildAt(c3, 1);
+    var div = document.createElement('div');
+    view.el.appendChild(div);
+    equal(view.el.children.length, 4);
+    view.syncChildren();
+    equal(view.el.children.length, 3);
+    equal(view.el.children[0], c1.el);   
+    equal(view.el.children[1], c3.el);   
+    equal(view.el.children[2], c2.el);   
   });
 
 });
