@@ -46,84 +46,6 @@ $(document).ready(function() {
     strictEqual(new View().one, 1);
   });
 
-  test("delegateEvents", 6, function() {
-    var counter1 = 0, counter2 = 0;
-
-    var view = new Backbone.View({el: '<p><a id="test"></a></p>'});
-    view.increment = function(){ counter1++; };
-    view.$el.on('click', function(){ counter2++; });
-
-    var events = {'click #test': 'increment'};
-
-    view.delegateEvents(events);
-    view.$('#test').trigger('click');
-    equal(counter1, 1);
-    equal(counter2, 1);
-
-    view.$('#test').trigger('click');
-    equal(counter1, 2);
-    equal(counter2, 2);
-
-    view.delegateEvents(events);
-    view.$('#test').trigger('click');
-    equal(counter1, 3);
-    equal(counter2, 3);
-  });
-
-  test("delegateEvents allows functions for callbacks", 3, function() {
-    var view = new Backbone.View({el: '<p></p>'});
-    view.counter = 0;
-
-    var events = {
-      click: function() {
-        this.counter++;
-      }
-    };
-
-    view.delegateEvents(events);
-    view.$el.trigger('click');
-    equal(view.counter, 1);
-
-    view.$el.trigger('click');
-    equal(view.counter, 2);
-
-    view.delegateEvents(events);
-    view.$el.trigger('click');
-    equal(view.counter, 3);
-  });
-
-
-  test("delegateEvents ignore undefined methods", 0, function() {
-    var view = new Backbone.View({el: '<p></p>'});
-    view.delegateEvents({'click': 'undefinedMethod'});
-    view.$el.trigger('click');
-  });
-
-  test("undelegateEvents", 6, function() {
-    var counter1 = 0, counter2 = 0;
-
-    var view = new Backbone.View({el: '<p><a id="test"></a></p>'});
-    view.increment = function(){ counter1++; };
-    view.$el.on('click', function(){ counter2++; });
-
-    var events = {'click #test': 'increment'};
-
-    view.delegateEvents(events);
-    view.$('#test').trigger('click');
-    equal(counter1, 1);
-    equal(counter2, 1);
-
-    view.undelegateEvents();
-    view.$('#test').trigger('click');
-    equal(counter1, 1);
-    equal(counter2, 2);
-
-    view.delegateEvents(events);
-    view.$('#test').trigger('click');
-    equal(counter1, 2);
-    equal(counter2, 3);
-  });
-
   test("_ensureElement with DOM node el", 1, function() {
     var View = Backbone.View.extend({
       el: document.body
@@ -209,54 +131,6 @@ $(document).ready(function() {
     strictEqual(new View().el.className, 'dynamic');
   });
 
-  test("multiple views per element", 3, function() {
-    var count = 0;
-    var $el = $('<p></p>');
-
-    var View = Backbone.View.extend({
-      el: $el,
-      events: {
-        click: function() {
-          count++;
-        }
-      }
-    });
-
-    var view1 = new View;
-    $el.trigger("click");
-    equal(1, count);
-
-    var view2 = new View;
-    $el.trigger("click");
-    equal(3, count);
-
-    view1.delegateEvents();
-    $el.trigger("click");
-    equal(5, count);
-  });
-
-  test("custom events, with namespaces", 2, function() {
-    var count = 0;
-
-    var View = Backbone.View.extend({
-      el: $('body'),
-      events: function() {
-        return {"fake$event.namespaced": "run"};
-      },
-      run: function() {
-        count++;
-      }
-    });
-
-    var view = new View;
-    $('body').trigger('fake$event').trigger('fake$event');
-    equal(count, 2);
-
-    $('body').unbind('.namespaced');
-    $('body').trigger('fake$event');
-    equal(count, 2);
-  });
-
   test("#1048 - setElement uses provided object.", 2, function() {
     var $el = $('body');
 
@@ -265,25 +139,6 @@ $(document).ready(function() {
 
     view.setElement($el = $($el));
     ok(view.$el === $el);
-  });
-
-  test("#986 - Undelegate before changing element.", 1, function() {
-    var button1 = $('<button></button>');
-    var button2 = $('<button></button>');
-
-    var View = Backbone.View.extend({
-      events: {
-        click: function(e) {
-          ok(view.el === e.target);
-        }
-      }
-    });
-
-    var view = new View({el: button1});
-    view.setElement(button2);
-
-    button1.trigger('click');
-    button2.trigger('click');
   });
 
   test("#1172 - Clone attributes object", 2, function() {
@@ -416,30 +271,6 @@ $(document).ready(function() {
     equal(view.getFocus(), child1);
     view.setFocus(null);
     equal(view.getFocus(), null);
-  });
-
-  test("events passed in options", 2, function() {
-    var counter = 0;
-
-    var View = Backbone.View.extend({
-      el: '<p><a id="test"></a></p>',
-      increment: function() {
-        counter++;
-      }
-    });
-
-    var view = new View({events:{'click #test':'increment'}});
-    var view2 = new View({events:function(){
-      return {'click #test':'increment'};
-    }});
-
-    view.$('#test').trigger('click');
-    view2.$('#test').trigger('click');
-    equal(counter, 2);
-
-    view.$('#test').trigger('click');
-    view2.$('#test').trigger('click');
-    equal(counter, 4);
   });
 
   test("children are added to dom in the correct order", 4, function() {
