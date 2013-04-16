@@ -337,4 +337,57 @@ $(document).ready(function() {
     equal(view.el.children[2], c2.el);   
   });
 
+  test("removeChild removes the child from children array", 1, function() {
+    var c1 = new Backbone.View();
+    var c2 = new Backbone.View();
+    var c3 = new Backbone.View();
+
+    view.addChild(c1);
+    view.addChild(c2);
+    view.addChild(c3);
+    view.removeChild(c1);
+    view.removeChild(c2);
+    view.removeChild(c3);
+    equal(view.children.length, 0);
+  });
+
+  test("removeChild removes the child's ele from DOM", 1, function() {
+    var c1 = new Backbone.View();
+    var c2 = new Backbone.View();
+    var c3 = new Backbone.View();
+
+    view.addChild(c1);
+    view.addChild(c2);
+    view.addChild(c3);
+    view.removeChild(c1);
+    view.removeChild(c2);
+    view.removeChild(c3);
+    equal(view.getChildContainer().children().length, 0);
+  });
+
+  test("removeChild does nothing if arg isn't a child", 6, function() {
+    var c1 = new Backbone.View();
+    var c2 = new Backbone.View();
+    var c3 = new Backbone.View();
+
+    view.addChild(c1);
+    view.addChild(c2);
+    view.removeChild(c3);
+    equal(view.children.length, 2);
+    equal(view.children[0], c1);
+    equal(view.children[1], c2);
+    equal(view.getChildContainer().children.length, 2);
+    equal(view.getChildContainer().children()[0], c1.el);
+    equal(view.getChildContainer().children()[1], c2.el);
+  });
+
+  test("removeChild sets focus to null if child had focus", 1, function() {
+    var c = new Backbone.View();
+
+    view.addChild(c);
+    view.setFocus(c);
+    view.removeChild(c);
+    equal(view.getFocus(), null);
+  });
+
 });

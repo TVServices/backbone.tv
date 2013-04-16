@@ -887,6 +887,18 @@
       return this.children.slice(0);
     },
 
+    // Remove Child
+    removeChild: function(child) {
+      var childIDX = this.children.indexOf(child);
+      if (childIDX !== -1) {
+        this.children.splice(childIDX, 1);
+        child.$el.remove();
+      }
+      if (this.getFocus() == child) {
+          this.setFocus(null);
+      }
+    },
+
     // Get the next child in the focus chain
     getFocus: function() {
       return this.inputFocus;
