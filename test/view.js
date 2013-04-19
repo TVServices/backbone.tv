@@ -46,6 +46,15 @@ $(document).ready(function() {
     strictEqual(new View().one, 1);
   });
 
+  test("addChild should be callable from initialize", 0, function() {
+    var View = Backbone.View.extend({
+      initialize: function() {
+        this.addChild(view);
+      }
+    });
+    new View;
+  });
+
   test("_ensureElement with DOM node el", 1, function() {
     var View = Backbone.View.extend({
       el: document.body

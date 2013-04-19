@@ -819,8 +819,8 @@
     this.cid = _.uniqueId('view');
     this._configure(options || {});
     this._ensureElement();
-    this.initialize.apply(this, arguments);
     this.children = [];
+    this.initialize.apply(this, arguments);
     this.inputFocus = null;
   };
 
