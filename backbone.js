@@ -804,13 +804,11 @@
   // Backbone.View
   // -------------
 
-  //TODO: rewrite this, when the dust settles, as this is all wrong now
-  // Backbone Views are almost more convention than they are actual code. A View
-  // is simply a JavaScript object that represents a logical chunk of UI in the
-  // DOM. This might be a single item, an entire list, a sidebar or panel, or
-  // even the surrounding frame which wraps your whole app. Defining a chunk of
-  // UI as a **View** allows you to define your DOM events declaratively, without
-  // having to worry about render order ... and makes it easy for the view to
+  // Backbone Views represents a logical chunk of UI in the DOM. This might
+  // be a single item, an entire list, a sidebar or panel, or even the 
+  // surrounding frame which wraps your whole app. Defining a chunk of
+  // UI as a **View** allows you to define your events without having to 
+  // worry about render order ... and makes it easy for the view to
   // react to specific changes in the state of your models.
 
   // Creating a Backbone.View creates its initial element outside of the DOM,
@@ -861,6 +859,7 @@
     addChild: function(child) {
       this.children.push(child);
       this.getChildContainer().append(child.el);
+      this.trigger('childAdded', this.children.length-1);
     },
       
     // Add a child to this View at index
@@ -870,6 +869,7 @@
       var children = container.children();
       if (children.length <= idx) container.append(child.el);
       else                        child.$el.insertBefore(children.eq(idx));
+      this.trigger('childAdded', idx);
     },
 
     // Get child at
@@ -893,6 +893,7 @@
       if (childIDX !== -1) {
         this.children.splice(childIDX, 1);
         child.$el.remove();
+        this.trigger('childRemoved', childIDX);
       }
       if (this.getFocus() == child) {
           this.setFocus(null);
@@ -906,13 +907,22 @@
 
     // Set which child has focus
     setFocus: function(child) {
-      if (child == null) {
-        this.inputFocus = null;
-        return true;
+      var hadFocus = this.getFocus();
+      if (child == hadFocus) {
+        return false;
       }
       var idx = this.getChildIndex(child);
-      if (idx != -1) {
+      if (child === null) {
+        this.inputFocus = null;
+        hadFocus.trigger('lostFocus');
+        return true;
+      }
+      if (idx !== -1) {
         this.inputFocus = child;
+        if (hadFocus) {
+          hadFocus.trigger('lostFocus');
+        }
+        this.inputFocus.trigger('gainFocus');
         return true;
       }
       return false;
@@ -1050,7 +1060,7 @@
         if (capture in cur) {
           captured = cur[capture](event);
         }
-        if (captured) {
+        if (captured !== false) {
           break;
         }
         cur = cur.getFocus();
@@ -1062,7 +1072,7 @@
         if (onEvent in cur) {
           handled = cur[onEvent](event);
         }
-        if (handled) {
+        if (handled !== false) {
           break;
         }
       }
