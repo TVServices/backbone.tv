@@ -7,7 +7,7 @@ end
 desc "build the docco documentation"
 task :doc do
   check 'docco', 'docco', 'https://github.com/jashkenas/docco'
-  system 'docco backbone.js && docco examples/todos/todos.js examples/backbone.localstorage.js'
+  system 'docco backbone.js'
 end
 
 desc "run JavaScriptLint on the source"
