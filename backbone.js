@@ -1008,9 +1008,11 @@
 
   // Backbone InputHandlers are used to pass non pointer events up the View 
   // Tree to the current focused element
-  var InputHandler = Backbone.InputHandler = function(rootEle, rootView) {
+  var InputHandler = Backbone.InputHandler = 
+      function(rootEle, rootView, actionMap) {
     this.rootEle = rootEle;
     this.rootView = rootView;
+    this.actionMap = actionMap || {};
     this.initialize();
   };
 
@@ -1051,6 +1053,12 @@
     // Walk a focus path through a view-tree calling the 
     // appropriate callbacks
     walkViews: function(capture, onEvent, event) {
+      if (event.keyCode in this.actionMap) {
+        event.action = this.actionMap[event.keyCode];
+      } else {
+        event.action = null;
+      }
+
       var viewStack = [];
       var cur = this.rootView;
 

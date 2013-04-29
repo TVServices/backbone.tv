@@ -2,6 +2,7 @@ $(document).ready(function() {
 
   var ele;
   var view;
+  var actionMap;
   var handler;
 
   module("Backbone.InputHandler", {
@@ -15,15 +16,19 @@ $(document).ready(function() {
           this.callbacks.push(callback);
         } 
       };
+      actionMap = {
+        25: 50
+      };
       view = new Backbone.View();
-      handler = new Backbone.InputHandler(ele, view);
+      handler = new Backbone.InputHandler(ele, view, actionMap);
     }
 
   });
 
-  test("constructor", 2, function() {
+  test("constructor", 3, function() {
     equal(handler.rootView, view);
     equal(handler.rootEle, ele);
+    equal(handler.actionMap, actionMap);
   });
 
   test("initialize", 3, function() {
@@ -49,6 +54,20 @@ $(document).ready(function() {
     equal(onevents[1], 'onKeyUp');
     equal(events[0], 'event1');
     equal(events[1], 'event2');
+  });
+
+  test("walkViews: event has action if keyCode is in actionMap", 3, function() {
+    var action;
+    view.onKeyDown = function(event) {
+      action = event.action;
+    };
+
+    handler.walkViews('captureKeyDown', 'onKeyDown', {keyCode:25});
+    equal(action, 50);
+    handler.walkViews('captureKeyDown', 'onKeyDown', {keyCode:10});
+    equal(action, null);
+    handler.walkViews('captureKeyDown', 'onKeyDown', {});
+    equal(action, null);
   });
 
   test("walkViews: calls callbacks in focus path in correct order", 1, function() {
