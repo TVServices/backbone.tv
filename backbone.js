@@ -818,8 +818,8 @@
     this._configure(options || {});
     this._ensureElement();
     this.children = [];
-    this.initialize.apply(this, arguments);
     this.inputFocus = null;
+    this.initialize.apply(this, arguments);
   };
 
   // List of view options to be merged as properties.
