@@ -1012,6 +1012,7 @@
       function(rootEle, rootView, actionMap) {
     this.rootEle = rootEle;
     this.rootView = rootView;
+    this.enabled = true;
     this.actionMap = actionMap || {};
     this.initialize();
   };
@@ -1031,6 +1032,10 @@
         'event': 'onKeyUp'
       }
     ],
+
+    setEnabled: function(which) {
+      this.enabled = which;
+    },
 
     // Sets up a callback
     initializeEvent: function(eventType) {
@@ -1053,6 +1058,8 @@
     // Walk a focus path through a view-tree calling the 
     // appropriate callbacks
     walkViews: function(capture, onEvent, event) {
+      if (!this.enabled) return;
+
       if (event.keyCode in this.actionMap) {
         event.action = this.actionMap[event.keyCode];
       } else {
