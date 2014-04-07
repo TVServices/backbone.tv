@@ -892,7 +892,7 @@
       var childIDX = this.children.indexOf(child);
       if (childIDX !== -1) {
         this.children.splice(childIDX, 1);
-        child.$el.remove();
+        child.remove();
         this.trigger('childRemoved', childIDX);
       }
       if (this.getFocus() == child) {
