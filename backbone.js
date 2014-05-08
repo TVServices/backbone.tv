@@ -890,14 +890,33 @@
     // Remove Child
     removeChild: function(child) {
       var childIDX = this.children.indexOf(child);
-      if (childIDX !== -1) {
+      this.removeChildAt(childIDX);
+    },
+
+    // Remove Child
+    removeChildAt: function(childIDX) {
+      if (childIDX >= 0 && childIDX < this.children.length) {
+        var child = this.getChildAt(childIDX);
         this.children.splice(childIDX, 1);
+        for (var idx = child.children.length-1; idx >= 0; idx--) {
+          child.removeChildAt(idx);
+        }
         child.remove();
         this.trigger('childRemoved', childIDX);
+
+        if (this.getFocus() == child) {
+            this.setFocus(null);
+        }
       }
-      if (this.getFocus() == child) {
-          this.setFocus(null);
+    },
+
+    // Remove All Children
+    removeAllChildren: function() {
+      for (var idx = this.children.length-1; idx >= 0; idx--) {
+        this.removeChildAt(idx);
       }
+      this.children = [];
+      this.syncChildren();
     },
 
     // Get the next child in the focus chain
